@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash of Cultures - Solo Adventure Helper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>⚔️ Clash of Cultures - Solo Adventure Helper</h1>
+            <p class="subtitle">ADVANCE Mechanic Tracker</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Left Panel: Tracker (Large) -->
+            <div class="left-panel">
+                <!-- Roll Controls -->
+                <section class="control-section compact">
+                    <div class="control-row">
+                        <button id="rollBtn" class="btn btn-primary">🎲 Roll</button>
+                        <button id="resetGameBtn" class="btn btn-danger btn-small">Reset</button>
+                    </div>
+                </section>
+
+                <!-- Roll Info Section -->
+                <section class="info-section">
+                    <div id="rollInfo">
+                        <p class="info-placeholder">Roll to see advancement details...</p>
+                    </div>
+                </section>
+
+                <!-- Advancements Tracker (LARGER) - Proper 4x3 Grid Order -->
+                <section class="tracker-section">
+                    <h2>Advancement Tracker</h2>
+                    <div class="advancements-grid large">
+                        <!-- Row 1 -->
+                        <div class="advancement-item" data-category="Agriculture">
+                            <div class="advancement-name">Agriculture</div>
+                            <div class="advancement-count" id="count-Agriculture">
+                                <div class="square-group"></div>
+                            </div>
+                        </div>
+                        <div class="advancement-item" data-category="Construction">
+                            <div class="advancement-name">Construction</div>
+                            <div class="advancement-count" id="count-Construction">
+                                <div class="square-group"></div>
+                            </div>
+                        </div>
+                        <div class="advancement-item" data-category="Maritime">
+                            <div class="advancement-name">Maritime</div>
+                            <div class="advancement-count" id="count-Maritime">
+                                <div class="square-group"></div>
+                            </div>
+                        </div>
+                        <div class="advancement-item" data-category="Education">
+                            <div class="advancement-name">Education</div>
+                            <div class="advancement-count" id="count-Education">
+                                <div class="square-group"></div>
+                            </div>
+                        </div>
+                        <div class="advancement-item" data-category="Warfare">
+                            <div class="advancement-name">Warfare</div>
+                            <div class="advancement-count" id="count-Warfare">
+                                <div class="square-group"></div>
+                            </div>
+                        </div>
+                        <!-- Row 2 -->
+                        <div class="advancement-item" data-category="Spirituality">
+                            <div class="advancement-name">Spirituality</div>
+                            <div class="advancement-count" id="count-Spirituality">
+                                <div class="square-group"></div>
+                            </div>
+                        </div>
+                        <div class="advancement-item" data-category="Economy">
+                            <div class="advancement-name">Economy</div>
+                            <div class="advancement-count" id="count-Economy">
+                                <div class="square-group"></div>
+                            </div>
+                        </div>
+                        <div class="advancement-item" data-category="Traditions">
+                            <div class="advancement-name">Traditions</div>
+                            <div class="advancement-count" id="count-Traditions">
+                                <div class="square-group"></div>
+                            </div>
+                        </div>
+                        <div class="advancement-item" data-category="Science">
+                            <div class="advancement-name">Science</div>
+                            <div class="advancement-count" id="count-Science">
+                                <div class="square-group"></div>
+                            </div>
+                        </div>
+                        <div class="advancement-item" data-category="Government">
+                            <div class="advancement-name">Government</div>
+                            <div class="advancement-count" id="count-Government">
+                                <div class="square-group"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Panel: Log (SMALLER) -->
+            <div class="right-panel">
+                <section class="log-section">
+                    <div class="log-header">
+                        <h2>Game Log</h2>
+                        <button id="clearLogBtn" class="btn btn-small">Clear</button>
+                    </div>
+                    <div class="log-container" id="logContainer">
+                        <div class="log-entry welcome">
+                            <span class="log-timestamp">Start</span>
+                            <span class="log-message">Welcome to Clash of Cultures Helper! Click Roll to begin.</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node (if ever needed)
+node_modules/
+package-lock.json
+
+# Python (legacy - no longer needed)
+__pycache__/
+*.pyc
+*.egg-info/
+venv/
+.env
+
+# Backup files
+*.bak
+*.backup
+*~
+
+archive/
+rules/
+documentation/
