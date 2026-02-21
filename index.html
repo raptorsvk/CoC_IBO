@@ -35,7 +35,26 @@
 
                 <!-- Advancements Tracker (LARGER) - Proper 4x3 Grid Order -->
                 <section class="tracker-section">
-                    <h2>Advancement Tracker</h2>
+                    <div class="tracker-header">
+                        <h2>Advancement Tracker</h2>
+                        <div class="culture-token-badge">
+                            <span class="token-label">🎭</span>
+                            <span id="cultureTokenBadge" class="token-badge-count">0</span>
+                            <button id="tokenDecBtn" class="btn-inline-token">−</button>
+                            <button id="tokenIncBtn" class="btn-inline-token">+</button>
+                        </div>
+                        <div id="aggression-display" class="aggression-display">
+                            <div class="aggression-item">
+                                <span class="aggression-label">⚔️ Land Range:</span>
+                                <span class="aggression-value">1</span>
+                            </div>
+                            <div class="aggression-item">
+                                <span class="aggression-label">🚢 Naval Range:</span>
+                                <span class="aggression-value">1</span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="advancements-grid large">
                         <!-- Row 1 -->
                         <div class="advancement-item" data-category="Agriculture">

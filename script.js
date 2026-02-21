@@ -22,12 +22,12 @@ const buildingMap = {
     'Agriculture': null,
     'Construction': null,
     'Maritime': 'Port',
-    'Education': 'Fortress',
-    'Warfare': 'Barracks',
+    'Education': 'Academy',
+    'Warfare': 'Fortress',
     'Spirituality': 'Temple',
     'Economy': 'Market',
-    'Traditions': 'Monument',
-    'Science': 'Library',
+    'Traditions': 'Obelisk',
+    'Science': 'Observatory',
     'Government': null
 };
 
@@ -49,13 +49,24 @@ const CATEGORY_EFFECTS = {
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
     setupEventListeners();
+    restoreCultureTokenToggleState();
+    updateUI();
 });
+
+// Restore culture token section toggle state from localStorage
+function restoreCultureTokenToggleState() {
+    // No longer needed - culture token section removed
+}
 
 // Setup Event Listeners
 function setupEventListeners() {
     document.getElementById('rollBtn').addEventListener('click', rollAdvancement);
     document.getElementById('clearLogBtn').addEventListener('click', clearLog);
     document.getElementById('resetGameBtn').addEventListener('click', resetGame);
+    
+    // Inline token buttons (in header)
+    document.getElementById('tokenIncBtn').addEventListener('click', incrementCultureTokens);
+    document.getElementById('tokenDecBtn').addEventListener('click', decrementCultureTokens);
 
     // Click on advancement items to manually adjust
     document.querySelectorAll('.advancement-item').forEach(item => {
@@ -92,6 +103,7 @@ function loadState() {
                 'Government': []
             },
             'scale_position': 0,
+            'culture_tokens': 0,
             'last_roll': null,
             'current_roll_info': null,
             'log': [
@@ -111,6 +123,17 @@ function loadState() {
 // Save state to localStorage
 function saveState() {
     localStorage.setItem('cocHelperState', JSON.stringify(gameState));
+}
+
+// Calculate aggression ranges based on advancements
+function calculateAggressionRanges() {
+    const navalAdvance = (gameState.advancement_slots['Maritime'] || []).length;
+    const landAdvance = (gameState.advancement_slots['Warfare'] || []).length;
+    
+    return {
+        naval: 1 + navalAdvance,
+        land: 1 + landAdvance
+    };
 }
 
 // Update UI based on current state
@@ -169,7 +192,7 @@ function updateUI() {
                     buildingLabel.className = 'building-label';
                     elem.appendChild(buildingLabel);
                 }
-                buildingLabel.textContent = `${buildingMap[category]}`;
+                buildingLabel.textContent = buildingMap[category];
             } else {
                 if (buildingLabel) {
                     buildingLabel.remove();
@@ -180,6 +203,12 @@ function updateUI() {
 
     // Update roll info display
     displayRollInfo(gameState.current_roll_info);
+
+    // Update aggression ranges
+    updateAggressionRanges();
+
+    // Update culture token display
+    updateCultureTokenDisplay();
 
     // Update log
     updateLog();
@@ -236,7 +265,8 @@ function rollAdvancement() {
                 rollInfo['new_slots'] = gameState['advancement_slots']['Government'].slice();
                 rollInfo['slot'] = govNewSlot;
                 rollInfo['message'] = `🎖️ RECRUIT action! Slot ${govNewSlot} filled in Government`;
-                addLog(`🎖️ ${category} is full! Redirecting to Government RECRUIT action - Slot ${govNewSlot} filled`);
+                const govProgress = gameState['advancement_slots']['Government'].length;
+                addLog(`🎖️ <strong>${category}</strong> is full! → RECRUIT action: <strong>Government</strong> Slot ${govNewSlot} (${govProgress}/4)`);
             } else {
                 rollInfo['category'] = 'Government';
                 rollInfo['message'] = '🎖️ RECRUIT action attempted but Government is also full!';
@@ -254,12 +284,15 @@ function rollAdvancement() {
         
         // If first advancement in this category, must use slot 1
         let newSlot;
+        let actionDesc = '';
         if (currentSlots.length === 0) {
             newSlot = 1;
+            actionDesc = 'First advancement - slot 1';
             rollInfo['message'] = '🎯 First advancement - slot 1 placed';
         } else {
             // Randomly choose from available slots
             newSlot = availableSlots[Math.floor(Math.random() * availableSlots.length)];
+            actionDesc = `Randomly selected slot ${newSlot}`;
             rollInfo['message'] = `🎲 Randomly selected slot ${newSlot}`;
         }
         
@@ -269,13 +302,17 @@ function rollAdvancement() {
         rollInfo['new_slots'] = gameState['advancement_slots'][category].slice();
         rollInfo['slot'] = newSlot;
         
+        const totalFilled = gameState['advancement_slots'][category].length;
+        
         // Check if building should be placed (when first slot is filled)
         if (newSlot === 1 && currentSlots.length === 0) {
             if (buildingMap[category]) {
                 rollInfo['building'] = buildingMap[category];
                 rollInfo['message'] = `🏗️ Building placed: ${buildingMap[category]}`;
-                addLog(`🏗️ Building placed: <strong>${buildingMap[category]}</strong>`);
+                addLog(`✅ <strong>${category}</strong> Slot ${newSlot} → 🏗️ ${buildingMap[category]} placed (${totalFilled}/4)`);
             }
+        } else {
+            addLog(`✅ <strong>${category}</strong> Slot ${newSlot} placed (${totalFilled}/4)`);
         }
         
         // Check for culture token (at specific advancement levels for that category)
@@ -284,7 +321,9 @@ function rollAdvancement() {
         if (cultureTokenLevels.includes(newSlot)) {
             rollInfo['culture_token'] = true;
             rollInfo['message'] = '🎭 +1 Culture Token earned!';
-            addLog('🎭 Culture Token earned!');
+            // Auto-increment culture token counter
+            gameState.culture_tokens = (gameState.culture_tokens || 0) + 1;
+            addLog(`🎭 Culture Token earned! (Total: ${gameState.culture_tokens})`);
         }
         
         // Check for Wonder Check (trigger when slot 3 or 4 is filled)
@@ -384,6 +423,7 @@ function resetGame() {
                 'Government': []
             },
             'scale_position': 0,
+            'culture_tokens': 0,
             'last_roll': null,
             'current_roll_info': null,
             'log': [
@@ -462,11 +502,11 @@ function displayRollInfo(rollInfo) {
         return;
     }
 
-    let html = `<strong>${rollInfo.category}</strong><br>`;
+    const category = rollInfo.category;
+    const totalSlots = (gameState.advancement_slots[category] || []).length;
     
-    if (rollInfo.slot) {
-        html += `🎯 Slot placed: ${rollInfo.slot}<br>`;
-    }
+    let html = `<strong>${category}</strong><br>`;
+    html += `📊 Progress: ${totalSlots}/4 slots filled<br>`;
     
     if (rollInfo.building) {
         html += `🏗️ Building: ${rollInfo.building}<br>`;
@@ -553,4 +593,57 @@ document.head.appendChild(animationStyle);
 function applyCultureBonusStyles() {
     // Culture bonus styling is now applied directly in updateUI()
     // This function is kept for compatibility but does nothing
+}
+
+// Update aggression ranges display
+function updateAggressionRanges() {
+    const ranges = calculateAggressionRanges();
+    const aggrDisplay = document.getElementById('aggression-display');
+    
+    if (aggrDisplay) {
+        aggrDisplay.innerHTML = `
+            <div class="aggression-item">
+                <span class="aggression-label">⚔️ Land Range:</span>
+                <span class="aggression-value">${ranges.land}</span>
+            </div>
+            <div class="aggression-item">
+                <span class="aggression-label">🚢 Naval Range:</span>
+                <span class="aggression-value">${ranges.naval}</span>
+            </div>
+        `;
+    }
+}
+
+// Update culture token display
+function updateCultureTokenDisplay() {
+    const tokenCount = document.getElementById('cultureTokenCount');
+    const tokenBadge = document.getElementById('cultureTokenBadge');
+    const culture = gameState.culture_tokens || 0;
+    
+    if (tokenCount) {
+        tokenCount.textContent = culture;
+    }
+    if (tokenBadge) {
+        tokenBadge.textContent = culture;
+    }
+}
+
+// Toggle culture token section visibility
+
+// Increment culture tokens
+function incrementCultureTokens() {
+    gameState.culture_tokens = (gameState.culture_tokens || 0) + 1;
+    addLog(`🎭 +1 Culture Token (Total: ${gameState.culture_tokens})`);
+    saveState();
+    updateCultureTokenDisplay();
+}
+
+// Decrement culture tokens
+function decrementCultureTokens() {
+    if ((gameState.culture_tokens || 0) > 0) {
+        gameState.culture_tokens -= 1;
+        addLog(`🎭 -1 Culture Token (Total: ${gameState.culture_tokens})`);
+        saveState();
+        updateCultureTokenDisplay();
+    }
 }
