@@ -31,27 +31,49 @@ const buildingMap = {
     'Government': null
 };
 
-// Category effects data - shown on Wonder Check or special rules
+// Category effects - full description for hover help and roll display (IBO = owner this helper is for)
 const CATEGORY_EFFECTS = {
-    'Agriculture': 'Wonder Check! Also... with the 3rd advancement, IBD reveals a Wonder.',
-    'Construction': 'Wonder Check! Also... with the 3rd advancement, IBD reveals a Wonder.',
-    'Maritime': 'Each advancement increases "Naval Aggression Range" by 1.',
-    'Education': 'When IBD gets his 3rd and 4th advancements in this category, if IBD can discard an Action Card, he does so to ADVANCE.',
-    'Warfare': 'Each advancement increases "Land Aggression Range" by 1.',
-    'Spirituality': 'When IBD gets his 3rd and 4th advancements in this category, if IBD can discard an Action Card, he does so to INFLUENCE CULTURE.',
-    'Economy': 'When IBD gets his 3rd and 4th advancements in this category, if IBD can discard an Action Card, he does so to CONSTRUCT.',
-    'Traditions': 'For every 2 advancements, IBD gains 1 Culture Token during the "Change Government?" phase of the Status Phase.',
-    'Science': 'When IBD gets his 3rd and 4th advancements in this category, if IBD can discard an Action Card, he does so to RECRUIT.',
-    'Government': 'Wonder Check! Also... when gets his 3rd and 4th advancements in this category, if IBD can discard an Action Card, he does so to perform another ACTION this turn.'
+    'Agriculture': 'Wonder Check! With the 3rd advancement, Reveal a Wonder.',
+    'Construction': 'Wonder Check! With the 3rd advancement, Reveal a Wonder.',
+    'Maritime': 'Each advancement increases "Naval Aggression Range" by 1 (starting with 1).',
+    'Education': 'When IBO gets his 3rd and 4th advancements in this category, if IBO can discard an Action Card, he does so to ADVANCE.',
+    'Warfare': 'Each advancement increases "Land Aggression Range" by 1 (starting with 1).',
+    'Spirituality': 'When IBO gets his 3rd and 4th advancements in this category, if IBO can discard an Action Card, he does so to INFLUENCE CULTURE.',
+    'Economy': 'When IBO gets his 3rd and 4th advancements in this category, if IBO can discard an Action Card, he does so to CONSTRUCT.',
+    'Traditions': 'For every 2 advancements, IBO gains 1 Culture token during the "Change Government?" phase of the Status Phase.',
+    'Science': 'When IBO gets his 3rd and 4th advancements in this category, if IBO can discard an Action Card, he does so to RECRUIT.',
+    'Government': 'Wonder Check! When IBO gets his 3rd and 4th advancements in this category, if IBO can discard an Action Card, he does so to perform another ACTION this turn.'
+};
+
+// Short text for advancement details box (action card effects)
+const ACTION_CARD_SHORT = {
+    'Education': '3rd/4th adv. discard an Action Card to ADVANCE',
+    'Spirituality': '3rd/4th adv. discard an Action Card to INFLUENCE CULTURE',
+    'Economy': '3rd/4th adv. discard an Action Card to CONSTRUCT',
+    'Science': '3rd/4th adv. discard an Action Card to RECRUIT',
+    'Government': '3rd/4th adv. discard an Action Card to perform another ACTION'
 };
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
     setupEventListeners();
+    injectAdvancementHelp();
     restoreCultureTokenToggleState();
     updateUI();
 });
+
+// Inject hover-help div with category effect into each advancement item (one-time)
+function injectAdvancementHelp() {
+    document.querySelectorAll('.advancement-item').forEach(item => {
+        const category = item.dataset.category;
+        if (!category || item.querySelector('.advancement-help')) return;
+        const help = document.createElement('div');
+        help.className = 'advancement-help';
+        help.textContent = CATEGORY_EFFECTS[category] || '';
+        item.appendChild(help);
+    });
+}
 
 // Restore culture token section toggle state from localStorage
 function restoreCultureTokenToggleState() {
@@ -87,6 +109,7 @@ function loadState() {
     
     if (saved) {
         gameState = JSON.parse(saved);
+        if (gameState.event_filled === undefined) gameState.event_filled = 3;
     } else {
         // Initialize default state
         gameState = {
@@ -104,6 +127,7 @@ function loadState() {
             },
             'scale_position': 0,
             'culture_tokens': 0,
+            'event_filled': 3,
             'last_roll': null,
             'current_roll_info': null,
             'log': [
@@ -204,11 +228,24 @@ function updateUI() {
     // Update roll info display
     displayRollInfo(gameState.current_roll_info);
 
+    // Update event tracker squares (event_filled = number of filled squares, 0–3)
+    const eventSquares = document.querySelectorAll('#eventTrackerSquares .event-square');
+    const filledCount = Math.min(3, Math.max(0, gameState.event_filled !== undefined ? gameState.event_filled : 3));
+    eventSquares.forEach((sq, i) => {
+        sq.classList.toggle('filled', i < filledCount);
+        sq.classList.toggle('empty', i >= filledCount);
+    });
+
     // Update aggression ranges
     updateAggressionRanges();
 
     // Update culture token display
     updateCultureTokenDisplay();
+
+    // Update total advancements counter (e.g. 2/40)
+    const totalAdvancements = Object.values(gameState.advancement_slots || {}).reduce((sum, slots) => sum + (slots && slots.length) || 0, 0);
+    const totalEl = document.getElementById('advancementTotalCount');
+    if (totalEl) totalEl.textContent = `${totalAdvancements}/40`;
 
     // Update log
     updateLog();
@@ -216,6 +253,17 @@ function updateUI() {
 
 // Roll advancement
 function rollAdvancement() {
+    // Event tracker: one square unfilled per roll; when all unfilled, reset and draw Event card
+    let eventFilled = gameState.event_filled !== undefined ? gameState.event_filled : 3;
+    eventFilled = Math.max(0, eventFilled - 1);
+    gameState.event_filled = eventFilled;
+    let drawEventCard = false;
+    if (eventFilled === 0) {
+        gameState.event_filled = 3;
+        drawEventCard = true;
+        addLog('📇 Draw Event card!');
+    }
+
     // Generate random rolls
     const firstDie = Math.floor(Math.random() * 3) + 1;
     const secondDie = Math.floor(Math.random() * 3) + 1;
@@ -244,7 +292,8 @@ function rollAdvancement() {
         'old_slots': (gameState['advancement_slots'][category] || []).slice(),
         'building': null,
         'culture_token': false,
-        'message': `Advanced in ${category}`
+        'message': `Advanced in ${category}`,
+        'draw_event_card': drawEventCard
     };
     
     // Check if category is already at max (4 slots filled)
@@ -273,9 +322,16 @@ function rollAdvancement() {
                 addLog('🎖️ ' + category + ' is full! Government RECRUIT also full - no advancement');
             }
             
+            rollInfo['draw_event_card'] = drawEventCard;
             gameState['current_roll_info'] = rollInfo;
             saveState();
             updateUI();
+            // Apply orange highlight to Government when redirect
+            document.querySelectorAll('.advancement-item.last-rolled').forEach(item => item.classList.remove('last-rolled'));
+            setTimeout(() => {
+                const govElem = document.querySelector('.advancement-item[data-category="Government"]');
+                if (govElem) govElem.classList.add('last-rolled');
+            }, 50);
             return;
         }
         
@@ -304,6 +360,16 @@ function rollAdvancement() {
         
         const totalFilled = gameState['advancement_slots'][category].length;
         
+        // Maritime/Warfare: show range increased message with new value
+        const ranges = calculateAggressionRanges();
+        if (category === 'Maritime') {
+            rollInfo['range_message'] = `Naval range increased (+1) to total of ${ranges.naval}`;
+            addLog(`🚢 ${rollInfo['range_message']}`);
+        } else if (category === 'Warfare') {
+            rollInfo['range_message'] = `Land range increased (+1) to total of ${ranges.land}`;
+            addLog(`⚔️ ${rollInfo['range_message']}`);
+        }
+        
         // Check if building should be placed (when first slot is filled)
         if (newSlot === 1 && currentSlots.length === 0) {
             if (buildingMap[category]) {
@@ -315,26 +381,40 @@ function rollAdvancement() {
             addLog(`✅ <strong>${category}</strong> Slot ${newSlot} placed (${totalFilled}/4)`);
         }
         
-        // Check for culture token (at specific advancement levels for that category)
+        // Check for culture token: by slot for most categories, or by total count for Traditions ("every 2 advancements" = at 2nd and 4th total)
         const cultureTokenLevels = cultureBonusMap[category] || [];
+        const traditionsCultureToken = category === 'Traditions' && (totalFilled === 2 || totalFilled === 4);
+        const slotBasedCultureToken = cultureTokenLevels.includes(newSlot);
         
-        if (cultureTokenLevels.includes(newSlot)) {
+        if (traditionsCultureToken || slotBasedCultureToken) {
             rollInfo['culture_token'] = true;
             rollInfo['message'] = '🎭 +1 Culture Token earned!';
-            // Auto-increment culture token counter
             gameState.culture_tokens = (gameState.culture_tokens || 0) + 1;
             addLog(`🎭 Culture Token earned! (Total: ${gameState.culture_tokens})`);
         }
         
-        // Check for Wonder Check (trigger when slot 3 or 4 is filled)
-        // Agriculture, Construction, and Government trigger Wonder Check
+        // 3rd/4th advancement = total count in category (not slot number). E.g. slots 1+4 filled = 2 total, no trigger; when 3rd total filled, trigger.
         const wonderCheckCategories = ['Agriculture', 'Construction', 'Government'];
+        const actionCardCategories = ['Education', 'Spirituality', 'Economy', 'Science', 'Government'];
+        const isThirdOrFourthTotal = totalFilled === 3 || totalFilled === 4;
         
-        if (wonderCheckCategories.includes(category) && [3, 4].includes(newSlot)) {
+        if (wonderCheckCategories.includes(category) && isThirdOrFourthTotal) {
             rollInfo['wonder_check'] = true;
+            rollInfo['wonder_total'] = totalFilled;
             const effect = CATEGORY_EFFECTS[category] || '';
-            rollInfo['message'] = `✓ Wonder Check! ${effect}`;
+            rollInfo['message'] = totalFilled === 3 && (category === 'Agriculture' || category === 'Construction')
+                ? `✓ Wonder Check! With the 3rd advancement, Reveal a Wonder.`
+                : category === 'Government'
+                    ? `✓ Wonder Check! ${effect}`
+                    : `✓ Wonder Check!`;
             addLog(`✓ Wonder Check! <strong>${effect}</strong>`);
+        }
+        
+        if (actionCardCategories.includes(category) && isThirdOrFourthTotal) {
+            const effect = CATEGORY_EFFECTS[category] || '';
+            rollInfo['action_card_effect'] = true;
+            rollInfo['action_card_message'] = effect;
+            if (category !== 'Government') addLog(`📋 <strong>${effect}</strong>`);
         }
     }
     
@@ -342,28 +422,36 @@ function rollAdvancement() {
     saveState();
     updateUI();
 
-    // Show building or culture token notification
+    // Show building notification only (culture token: light up counter instead)
     if (rollInfo.building) {
         showNotification(`🏗️ Building placed: ${rollInfo.building}`, 'building');
     }
     
     if (rollInfo.culture_token) {
-        showNotification('🎭 +1 Culture Token earned!', 'culture');
+        lightUpCultureCounter();
     }
 
-    // Add last-rolled class to current item
+    // Add last-rolled class to current item (including when redirect to Government)
     const rollCategory = rollInfo.category;
     if (rollCategory) {
         document.querySelectorAll('.advancement-item.last-rolled').forEach(item => {
             item.classList.remove('last-rolled');
         });
-        
         setTimeout(() => {
-            const elem = document.querySelector(`[data-category="${rollCategory}"]`);
+            const elem = document.querySelector(`.advancement-item[data-category="${rollCategory}"]`);
             if (elem) {
                 elem.classList.add('last-rolled');
             }
         }, 50);
+    }
+}
+
+function lightUpCultureCounter() {
+    const badge = document.getElementById('cultureTokenBadge');
+    const wrap = badge && badge.closest('.culture-token-badge');
+    if (wrap) {
+        wrap.classList.add('culture-token-light-up');
+        setTimeout(() => wrap.classList.remove('culture-token-light-up'), 2000);
     }
 }
 
@@ -424,6 +512,7 @@ function resetGame() {
             },
             'scale_position': 0,
             'culture_tokens': 0,
+            'event_filled': 3,
             'last_roll': null,
             'current_roll_info': null,
             'log': [
@@ -453,9 +542,9 @@ function updateLog() {
     // Reverse log to show latest entries on top
     const reversedLog = [...gameState.log].reverse();
     
-    reversedLog.forEach(entry => {
+    reversedLog.forEach((entry, i) => {
         const div = document.createElement('div');
-        div.className = 'log-entry';
+        div.className = 'log-entry' + (i % 2 === 0 ? ' log-entry-alt-a' : ' log-entry-alt-b');
         
         const timestamp = document.createElement('span');
         timestamp.className = 'log-timestamp';
@@ -504,27 +593,42 @@ function displayRollInfo(rollInfo) {
 
     const category = rollInfo.category;
     const totalSlots = (gameState.advancement_slots[category] || []).length;
+    const cultureTotal = gameState.culture_tokens || 0;
     
-    let html = `<strong>${category}</strong><br>`;
-    html += `📊 Progress: ${totalSlots}/4 slots filled<br>`;
+    let html = `<strong>${category} (${totalSlots}/4)</strong><br>`;
+    html += `🎭 Culture tokens: ${cultureTotal}<br>`;
     
     if (rollInfo.building) {
         html += `🏗️ Building: ${rollInfo.building}<br>`;
     }
     
     if (rollInfo.culture_token) {
-        html += `🎭 Culture Token earned!<br>`;
+        html += `🎭 +1 Culture Token earned!<br>`;
+    }
+    
+    if (rollInfo.range_message) {
+        html += `${rollInfo.range_message}<br>`;
     }
     
     if (rollInfo.wonder_check) {
         html += `✓ Wonder Check!<br>`;
-        // Add the special effects message from the backend
         if (rollInfo.message && rollInfo.message.includes('✓ Wonder Check!')) {
-            const effectText = rollInfo.message.replace('✓ Wonder Check! ', '');
+            const effectText = rollInfo.message.replace('✓ Wonder Check! ', '').trim();
             if (effectText) {
                 html += `<small style="color: #a855f7;">${effectText}</small>`;
             }
         }
+    }
+    
+    if (rollInfo.action_card_effect) {
+        const shortMsg = ACTION_CARD_SHORT[category];
+        if (shortMsg) {
+            html += `<br><small style="color: #a855f7;">📋 ${shortMsg}</small>`;
+        }
+    }
+    
+    if (rollInfo.draw_event_card) {
+        html += `<br><strong class="draw-event-text">📇 Draw Event card</strong>`;
     }
     
     infoContent.innerHTML = html;

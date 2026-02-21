@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+        <!-- Header (navy blue) -->
         <header class="header">
             <h1>⚔️ Clash of Cultures - Solo Adventure Helper</h1>
             <p class="subtitle">ADVANCE Mechanic Tracker</p>
@@ -36,12 +36,8 @@
                 <!-- Advancements Tracker (LARGER) - Proper 4x3 Grid Order -->
                 <section class="tracker-section">
                     <div class="tracker-header">
-                        <h2>Advancement Tracker</h2>
-                        <div class="culture-token-badge">
-                            <span class="token-label">🎭</span>
-                            <span id="cultureTokenBadge" class="token-badge-count">0</span>
-                            <button id="tokenDecBtn" class="btn-inline-token">−</button>
-                            <button id="tokenIncBtn" class="btn-inline-token">+</button>
+                        <div class="tracker-header-left">
+                            <h2>Advancement Tracker</h2>
                         </div>
                         <div id="aggression-display" class="aggression-display">
                             <div class="aggression-item">
@@ -51,6 +47,32 @@
                             <div class="aggression-item">
                                 <span class="aggression-label">🚢 Naval Range:</span>
                                 <span class="aggression-value">1</span>
+                            </div>
+                        </div>
+                        <div class="tracker-header-right">
+                        <div class="event-tracker-wrap" id="eventTrackerWrap">
+                            <div class="event-tracker-row">
+                                <span class="event-tracker-label">Event</span>
+                                <div class="event-tracker-squares" id="eventTrackerSquares">
+                                    <span class="event-square filled" data-idx="0"></span>
+                                    <span class="event-square filled" data-idx="1"></span>
+                                    <span class="event-square filled" data-idx="2"></span>
+                                </div>
+                            </div>
+                            <div class="event-tracker-help" id="eventTrackerHelp">
+                                IBO will only act on the icon of the event. No text of any Event Card effects IBO. If the text effects you, your part is carried out.<br><br>
+                                <strong>Barbarians Spawn:</strong> You spawn a Barbarian Settlement and Infantry following placement rules from his cities. IBO will then place the additional barbarian unit in a settlement as close to you and as far from his cities as he can. Roll the die to determine which unit is spawned, similar to recruiting with a Market. Leader = Infantry.<br><br>
+                                <strong>Barbarians Move:</strong> You move all Barbarian Armies within 2 Land spaces of his cities 1 space toward his cities. You then place the additional barbarian infantry in all barbarian settlements within 2 of IBO's cities.<br><br>
+                                <strong>Pirate Spawn and Raid:</strong> You choose the placement of the first Pirate Ship adjacent to one of his cities. He will then place another Pirate Ship in an empty space adjacent to one of your cities and as far from his cities as possible. If all 4 pirate ships are on board… remove those closest to his cities first. If at least one Pirate Ship can raid one of his cities, IBO discards a C.<br><br>
+                                <strong>Gold Mine:</strong> IBO gains 2 C.<br><br>
+                                <strong>Exhausted Land:</strong> Place the Exhausted Token on the scale with the first non-settlement city-piece. When IBO goes to CONSTRUCT this city-piece, return it to supply and place the exhaust token adjacent to the city with his settler instead. If no valid city-piece is on scale, discard exhaust token.
+                            </div>
+                        </div>
+                            <div class="culture-token-badge">
+                                <img src="assets/culture-token.png" alt="Culture" class="token-icon" onerror="this.style.display='none';this.nextElementSibling.style.display='inline';" /><span class="token-emoji-fallback" style="display:none;font-size:1.1em">🎭</span>
+                                <span id="cultureTokenBadge" class="token-badge-count">0</span>
+                                <button id="tokenDecBtn" class="btn-inline-token">−</button>
+                                <button id="tokenIncBtn" class="btn-inline-token">+</button>
                             </div>
                         </div>
                     </div>
@@ -118,6 +140,10 @@
                                 <div class="square-group"></div>
                             </div>
                         </div>
+                    </div>
+                    <div class="advancement-total-row">
+                        <span class="advancement-total-label">Advancements</span>
+                        <span id="advancementTotalCount" class="advancement-total-value">0/40</span>
                     </div>
                 </section>
             </div>
