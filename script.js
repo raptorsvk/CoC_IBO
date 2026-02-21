@@ -253,6 +253,9 @@ function updateUI() {
 
 // Roll advancement
 function rollAdvancement() {
+    const rollIndex = (gameState.roll_index != null ? gameState.roll_index : 0) + 1;
+    gameState.roll_index = rollIndex;
+
     // Event tracker: one square unfilled per roll; when all unfilled, reset and draw Event card
     let eventFilled = gameState.event_filled !== undefined ? gameState.event_filled : 3;
     eventFilled = Math.max(0, eventFilled - 1);
@@ -261,7 +264,7 @@ function rollAdvancement() {
     if (eventFilled === 0) {
         gameState.event_filled = 3;
         drawEventCard = true;
-        addLog('📇 Draw Event card!');
+        addLog('📇 Draw Event card!', rollIndex);
     }
 
     // Generate random rolls
@@ -285,7 +288,7 @@ function rollAdvancement() {
     // Log the roll
     let rollMsg = `🎲 Rolled: ${firstDie} (1st) + ${secondDie} (2nd) + ${thirdDie} (3rd → ${thirdInterpretation}) → <strong>${category}</strong>`;
     
-    addLog(rollMsg);
+    addLog(rollMsg, rollIndex);
     
     const rollInfo = {
         'category': category,
@@ -315,11 +318,11 @@ function rollAdvancement() {
                 rollInfo['slot'] = govNewSlot;
                 rollInfo['message'] = `🎖️ RECRUIT action! Slot ${govNewSlot} filled in Government`;
                 const govProgress = gameState['advancement_slots']['Government'].length;
-                addLog(`🎖️ <strong>${category}</strong> is full! → RECRUIT action: <strong>Government</strong> Slot ${govNewSlot} (${govProgress}/4)`);
+                addLog(`🎖️ <strong>${category}</strong> is full! → RECRUIT action: <strong>Government</strong> Slot ${govNewSlot} (${govProgress}/4)`, rollIndex);
             } else {
                 rollInfo['category'] = 'Government';
                 rollInfo['message'] = '🎖️ RECRUIT action attempted but Government is also full!';
-                addLog('🎖️ ' + category + ' is full! Government RECRUIT also full - no advancement');
+                addLog('🎖️ ' + category + ' is full! Government RECRUIT also full - no advancement', rollIndex);
             }
             
             rollInfo['draw_event_card'] = drawEventCard;
@@ -364,10 +367,10 @@ function rollAdvancement() {
         const ranges = calculateAggressionRanges();
         if (category === 'Maritime') {
             rollInfo['range_message'] = `Naval range increased (+1) to total of ${ranges.naval}`;
-            addLog(`🚢 ${rollInfo['range_message']}`);
+            addLog(`⛵ ${rollInfo['range_message']}`, rollIndex);
         } else if (category === 'Warfare') {
             rollInfo['range_message'] = `Land range increased (+1) to total of ${ranges.land}`;
-            addLog(`⚔️ ${rollInfo['range_message']}`);
+            addLog(`🗡️👣 ${rollInfo['range_message']}`, rollIndex);
         }
         
         // Check if building should be placed (when first slot is filled)
@@ -375,10 +378,10 @@ function rollAdvancement() {
             if (buildingMap[category]) {
                 rollInfo['building'] = buildingMap[category];
                 rollInfo['message'] = `🏗️ Building placed: ${buildingMap[category]}`;
-                addLog(`✅ <strong>${category}</strong> Slot ${newSlot} → 🏗️ ${buildingMap[category]} placed (${totalFilled}/4)`);
+                addLog(`✅ <strong>${category}</strong> Slot ${newSlot} → 🏗️ ${buildingMap[category]} placed (${totalFilled}/4)`, rollIndex);
             }
         } else {
-            addLog(`✅ <strong>${category}</strong> Slot ${newSlot} placed (${totalFilled}/4)`);
+            addLog(`✅ <strong>${category}</strong> Slot ${newSlot} placed (${totalFilled}/4)`, rollIndex);
         }
         
         // Check for culture token: by slot for most categories, or by total count for Traditions ("every 2 advancements" = at 2nd and 4th total)
@@ -390,7 +393,7 @@ function rollAdvancement() {
             rollInfo['culture_token'] = true;
             rollInfo['message'] = '🎭 +1 Culture Token earned!';
             gameState.culture_tokens = (gameState.culture_tokens || 0) + 1;
-            addLog(`🎭 Culture Token earned! (Total: ${gameState.culture_tokens})`);
+            addLog(`🎭 +1 Culture token (${gameState.culture_tokens} total)`, rollIndex);
         }
         
         // 3rd/4th advancement = total count in category (not slot number). E.g. slots 1+4 filled = 2 total, no trigger; when 3rd total filled, trigger.
@@ -407,14 +410,14 @@ function rollAdvancement() {
                 : category === 'Government'
                     ? `✓ Wonder Check! ${effect}`
                     : `✓ Wonder Check!`;
-            addLog(`✓ Wonder Check! <strong>${effect}</strong>`);
+            addLog(`✓ Wonder Check! <strong>${effect}</strong>`, rollIndex);
         }
         
         if (actionCardCategories.includes(category) && isThirdOrFourthTotal) {
             const effect = CATEGORY_EFFECTS[category] || '';
             rollInfo['action_card_effect'] = true;
             rollInfo['action_card_message'] = effect;
-            if (category !== 'Government') addLog(`📋 <strong>${effect}</strong>`);
+            if (category !== 'Government') addLog(`📋 <strong>${effect}</strong>`, rollIndex);
         }
     }
     
@@ -542,9 +545,11 @@ function updateLog() {
     // Reverse log to show latest entries on top
     const reversedLog = [...gameState.log].reverse();
     
-    reversedLog.forEach((entry, i) => {
+    reversedLog.forEach((entry) => {
+        const rollGroup = entry.roll_index != null ? entry.roll_index : 0;
+        const altClass = rollGroup % 2 === 0 ? ' log-entry-alt-a' : ' log-entry-alt-b';
         const div = document.createElement('div');
-        div.className = 'log-entry' + (i % 2 === 0 ? ' log-entry-alt-a' : ' log-entry-alt-b');
+        div.className = 'log-entry' + altClass;
         
         const timestamp = document.createElement('span');
         timestamp.className = 'log-timestamp';
@@ -563,8 +568,8 @@ function updateLog() {
     logContainer.scrollTop = 0;
 }
 
-// Add log entry
-function addLog(message) {
+// Add log entry (rollIndex optional: when set, entry is grouped with that roll for alternating row color)
+function addLog(message, rollIndex) {
     const timestamp = new Date().toLocaleTimeString('en-US', { 
         hour12: false, 
         hour: '2-digit', 
@@ -574,7 +579,8 @@ function addLog(message) {
     gameState.log.push({
         'timestamp': timestamp,
         'message': message,
-        'roll_data': null
+        'roll_data': null,
+        'roll_index': rollIndex != null ? rollIndex : undefined
     });
     
     if (gameState.log.length > 100) {
@@ -596,14 +602,12 @@ function displayRollInfo(rollInfo) {
     const cultureTotal = gameState.culture_tokens || 0;
     
     let html = `<strong>${category} (${totalSlots}/4)</strong><br>`;
-    html += `🎭 Culture tokens: ${cultureTotal}<br>`;
+    if (rollInfo.culture_token) {
+        html += `🎭 +1 Culture token (${cultureTotal} total)<br>`;
+    }
     
     if (rollInfo.building) {
         html += `🏗️ Building: ${rollInfo.building}<br>`;
-    }
-    
-    if (rollInfo.culture_token) {
-        html += `🎭 +1 Culture Token earned!<br>`;
     }
     
     if (rollInfo.range_message) {
@@ -615,7 +619,7 @@ function displayRollInfo(rollInfo) {
         if (rollInfo.message && rollInfo.message.includes('✓ Wonder Check!')) {
             const effectText = rollInfo.message.replace('✓ Wonder Check! ', '').trim();
             if (effectText) {
-                html += `<small style="color: #a855f7;">${effectText}</small>`;
+                html += `<small class="effect-text">${effectText}</small>`;
             }
         }
     }
@@ -623,7 +627,7 @@ function displayRollInfo(rollInfo) {
     if (rollInfo.action_card_effect) {
         const shortMsg = ACTION_CARD_SHORT[category];
         if (shortMsg) {
-            html += `<br><small style="color: #a855f7;">📋 ${shortMsg}</small>`;
+            html += `<br><small class="effect-text">📋 ${shortMsg}</small>`;
         }
     }
     
@@ -642,8 +646,8 @@ function showNotification(message, type) {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: linear-gradient(135deg, #a855f7, #7c3aed);
-        color: white;
+        background: linear-gradient(135deg, #E8DCB8, #b8a878);
+        color: #1a1a14;
         padding: 1rem 1.5rem;
         border-radius: 8px;
         font-weight: 600;
@@ -665,8 +669,8 @@ function showNotification(message, type) {
 const animationStyle = document.createElement('style');
 animationStyle.textContent = `
     @keyframes pulse {
-        0%, 100% { transform: scale(1); border-color: #7c3aed; }
-        50% { transform: scale(1.1); border-color: #a855f7; }
+        0%, 100% { transform: scale(1); border-color: #b8a878; }
+        50% { transform: scale(1.1); border-color: #E8DCB8; }
     }
     
     @keyframes slideInRight {
@@ -707,11 +711,11 @@ function updateAggressionRanges() {
     if (aggrDisplay) {
         aggrDisplay.innerHTML = `
             <div class="aggression-item">
-                <span class="aggression-label">⚔️ Land Range:</span>
+                <span class="aggression-label">🗡️👣 Land Range:</span>
                 <span class="aggression-value">${ranges.land}</span>
             </div>
             <div class="aggression-item">
-                <span class="aggression-label">🚢 Naval Range:</span>
+                <span class="aggression-label">⛵ Naval Range:</span>
                 <span class="aggression-value">${ranges.naval}</span>
             </div>
         `;
