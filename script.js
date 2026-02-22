@@ -601,9 +601,9 @@ function displayRollInfo(rollInfo) {
     const totalSlots = (gameState.advancement_slots[category] || []).length;
     const cultureTotal = gameState.culture_tokens || 0;
     
-    let html = `<strong>${category} (${totalSlots}/4)</strong><br>`;
+    let html = `<strong class="roll-info-category">${category} (${totalSlots}/4)</strong><br>`;
     if (rollInfo.culture_token) {
-        html += `🎭 +1 Culture token (${cultureTotal} total)<br>`;
+        html += `<span class="roll-info-culture">+1 <img src="assets/culture-token.png" alt="🎭" class="roll-info-culture-icon" onerror="this.outerHTML='🎭 '" /> (${cultureTotal} current total)</span><br>`;
     }
     
     if (rollInfo.building) {

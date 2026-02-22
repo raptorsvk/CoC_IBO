@@ -7,9 +7,9 @@
 }
 
 :root {
-    --bg-dark: #1a1a2e;
-    --bg-darker: #0f0f1e;
-    --bg-light: #2a2830;
+    --bg-dark: #151c28;
+    --bg-darker: #0d1219;
+    --bg-light: #1e2836;
     --text-primary: #e8e4dc;
     --text-secondary: #b0a898;
     --paper: #E8DCB8;
@@ -20,8 +20,8 @@
     --success: #06d6a0;
     --warning: #d4a84b;
     --danger: #c44;
-    --border-color: #3d3a44;
-    --culture-blue: #E8DCB8;
+    --border-color: #2d3644;
+    --culture-cyan: #00d4ff;
     --highlight-orange: #ff9500;
 }
 
@@ -161,7 +161,7 @@ body {
 }
 
 .event-tracker-help strong {
-    color: var(--accent-tertiary);
+    color: var(--paper);
 }
 
 /* Container & Layout */
@@ -217,7 +217,7 @@ body {
 .control-section h3,
 .tracker-section h2,
 .info-section h2 {
-    color: var(--accent-primary);
+    color: var(--paper);
     font-size: 1.1rem;
     margin-bottom: 0.8rem;
     text-transform: uppercase;
@@ -339,7 +339,7 @@ body {
     cursor: pointer;
     width: 16px;
     height: 16px;
-    accent-color: var(--accent-primary);
+    accent-color: var(--paper-dark);
 }
 
 /* Advancements Grid (LARGER) */
@@ -467,7 +467,7 @@ body {
 }
 
 .culture-token-header h3 {
-    color: var(--accent-primary);
+    color: var(--paper);
     font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -482,11 +482,11 @@ body {
 }
 
 .culture-token-counter {
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
+    background: linear-gradient(135deg, var(--paper-dark), var(--paper));
     border-radius: 8px;
     padding: 0.8rem 1.5rem;
     min-width: 80px;
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 4px 12px rgba(184, 168, 120, 0.3);
 }
 
 .token-count {
@@ -499,8 +499,8 @@ body {
 }
 
 .btn-token {
-    background-color: var(--accent-primary);
-    color: white;
+    background-color: var(--paper-dark);
+    color: #1a1a14;
     min-width: 50px;
     height: 50px;
     padding: 0;
@@ -530,7 +530,7 @@ body {
 .advancement-item {
     position: relative;
     background-color: var(--bg-dark);
-    border: 2px solid var(--border-color);
+    border: 2px solid var(--paper-dark);
     border-radius: 8px;
     padding: 1.5rem 1rem;
     text-align: center;
@@ -554,7 +554,7 @@ body {
     max-height: 50vh;
     overflow-y: auto;
     background: var(--bg-dark);
-    border: 2px solid var(--accent-primary);
+    border: 2px solid var(--paper-dark);
     border-radius: 8px;
     padding: 0.75rem 1rem;
     font-size: 0.78rem;
@@ -570,7 +570,7 @@ body {
 }
 
 .advancement-help strong {
-    color: var(--accent-tertiary);
+    color: var(--paper);
 }
 
 .advancement-item:hover {
@@ -597,7 +597,7 @@ body {
 }
 
 .advancement-count {
-    color: var(--accent-primary);
+    color: var(--paper);
     font-size: 1.2rem;
     font-weight: 900;
     line-height: 1;
@@ -619,12 +619,12 @@ body {
     display: inline-block;
     width: 18px;
     height: 18px;
-    border: 2px solid var(--accent-primary);
+    border: 2px solid var(--paper-dark);
     border-radius: 2px;
 }
 
 .advancement-square.filled {
-    background-color: var(--accent-primary);
+    background-color: var(--paper-dark);
 }
 
 .advancement-square.empty {
@@ -638,7 +638,7 @@ body {
 }
 
 .advancement-square.culture-bonus.filled {
-    background-color: var(--accent-primary);
+    background-color: var(--paper-dark);
 }
 
 .advancement-square.culture-bonus.empty {
@@ -648,7 +648,7 @@ body {
 /* Newly added advancement square - orange inside fill */
 .advancement-square.newly-added {
     background-color: #ff9500 !important;
-    border-color: var(--accent-primary) !important;
+    border-color: var(--paper-dark) !important;
     box-shadow: none !important;
 }
 
@@ -695,11 +695,25 @@ body {
 .advancement-total-value {
     font-size: 1.1rem;
     font-weight: 800;
-    color: var(--accent-primary);
+    color: var(--paper);
 }
 
 .draw-event-text {
-    color: var(--paper-dark) !important;
+    color: var(--highlight-orange) !important;
+}
+
+.roll-info-culture {
+    color: var(--culture-cyan);
+}
+.roll-info-culture img.roll-info-culture-icon {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin: 0 2px;
+}
+
+.roll-info-category {
+    color: var(--paper);
 }
 
 .effect-text {
@@ -741,7 +755,7 @@ body {
 }
 
 .log-header h2 {
-    color: var(--accent-primary);
+    color: var(--paper);
     font-size: 1.1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -759,7 +773,7 @@ body {
 /* Log Entries */
 .log-entry {
     background-color: var(--bg-dark);
-    border-left: 3px solid var(--accent-primary);
+    border-left: 3px solid var(--paper-dark);
     padding: 0.6rem;
     border-radius: 4px;
     font-size: 0.85rem;
@@ -771,7 +785,7 @@ body {
 }
 
 .log-entry.welcome {
-    border-left-color: var(--accent-tertiary);
+    border-left-color: var(--paper);
 }
 
 .log-entry-alt-a {
@@ -793,7 +807,7 @@ body {
 }
 
 .log-timestamp {
-    color: var(--accent-primary);
+    color: var(--paper-dark);
     font-weight: 700;
     min-width: 50px;
     font-size: 0.75rem;
@@ -816,12 +830,12 @@ body {
 }
 
 .log-container::-webkit-scrollbar-thumb {
-    background: var(--accent-primary);
+    background: var(--paper-dark);
     border-radius: 4px;
 }
 
 .log-container::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-secondary);
+    background: var(--paper);
 }
 
 /* Responsive Design */
