@@ -13,12 +13,14 @@ function flushCultureManualLog() {
     cultureManualAdjustTimer = null;
     const sign = d > 0 ? '+' : '';
     addLog(`🎭 Manual culture tokens: ${sign}${d} (total: ${gameState.culture_tokens})`);
+    lastLogLength = -1;
+    updateLog();
 }
 
 function queueCultureManualLog(delta) {
     cultureManualAdjustDelta += delta;
     if (cultureManualAdjustTimer) clearTimeout(cultureManualAdjustTimer);
-    cultureManualAdjustTimer = setTimeout(flushCultureManualLog, 1500);
+    cultureManualAdjustTimer = setTimeout(flushCultureManualLog, 2500);
 }
 
 // Category culture token bonus positions: category -> list of advancement numbers
@@ -336,8 +338,19 @@ function rollAdvancement() {
                 rollInfo['category'] = 'Government';
                 rollInfo['new_slots'] = gameState['advancement_slots']['Government'].slice();
                 rollInfo['slot'] = govNewSlot;
-                rollInfo['message'] = `🎖️ RECRUIT action! Slot ${govNewSlot} filled in Government`;
+                rollInfo['recruit_redirect'] = true;
+                rollInfo['recruit_from_category'] = category;
+                rollInfo['recruit_slot'] = govNewSlot;
                 const govProgress = gameState['advancement_slots']['Government'].length;
+                const govEffect = CATEGORY_EFFECTS['Government'] || '';
+                rollInfo['wonder_check'] = true;
+                if (govProgress >= 3) {
+                    rollInfo['message'] = `✓ Wonder Check! ${govEffect}`;
+                    rollInfo['action_card_effect'] = true;
+                    rollInfo['action_card_message'] = govEffect;
+                } else {
+                    rollInfo['message'] = '✓ Wonder Check!';
+                }
                 addLog(`🎖️ <strong>${category}</strong> is full! → RECRUIT action: <strong>Government</strong> Slot ${govNewSlot} (${govProgress}/4)`, rollIndex);
             } else {
                 rollInfo['category'] = 'Government';
@@ -367,15 +380,18 @@ function rollAdvancement() {
         // Get available slots (1-4 that are not yet filled)
         const availableSlots = [1, 2, 3, 4].filter(slot => !currentSlots.includes(slot));
         
-        // If first advancement in this category, must use slot 1
+        // First advancement in category = slot 1; Government also always takes slot 1 next if still free
         let newSlot;
         let actionDesc = '';
         if (currentSlots.length === 0) {
             newSlot = 1;
             actionDesc = 'First advancement - slot 1';
             rollInfo['message'] = '🎯 First advancement - slot 1 placed';
+        } else if (category === 'Government' && availableSlots.includes(1)) {
+            newSlot = 1;
+            actionDesc = 'Government: slot 1 (first available)';
+            rollInfo['message'] = '🎯 Government advancement — slot 1 placed';
         } else {
-            // Randomly choose from available slots
             newSlot = availableSlots[Math.floor(Math.random() * availableSlots.length)];
             actionDesc = `Randomly selected slot ${newSlot}`;
             rollInfo['message'] = `🎲 Randomly selected slot ${newSlot}`;
@@ -490,10 +506,10 @@ function rollAdvancement() {
 
 function lightUpCultureCounter() {
     const badge = document.getElementById('cultureTokenBadge');
-    const wrap = badge && badge.closest('.culture-token-badge');
-    if (wrap) {
-        wrap.classList.add('culture-token-light-up');
-        setTimeout(() => wrap.classList.remove('culture-token-light-up'), 2000);
+    const inner = badge && badge.closest('.culture-token-badge');
+    if (inner) {
+        inner.classList.add('culture-token-light-up');
+        setTimeout(() => inner.classList.remove('culture-token-light-up'), 2000);
     }
 }
 
@@ -627,6 +643,15 @@ function addLog(message, rollIndex) {
     }
 }
 
+function escapeHtml(s) {
+    if (s == null || s === undefined) return '';
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
 // Display roll information
 function displayRollInfo(rollInfo) {
     const infoContent = document.getElementById('rollInfo');
@@ -640,41 +665,49 @@ function displayRollInfo(rollInfo) {
     const totalSlots = (gameState.advancement_slots[category] || []).length;
     const cultureTotal = gameState.culture_tokens || 0;
     
-    let html = `<strong class="roll-info-category">${category} (${totalSlots}/4)</strong><br>`;
+    let html = `<strong class="roll-info-category">${escapeHtml(category)} (${totalSlots}/4)</strong><br>`;
+    
+    if (rollInfo.recruit_redirect && rollInfo.recruit_from_category) {
+        html += `<span class="effect-text">🎖️ RECRUIT: <strong>${escapeHtml(rollInfo.recruit_from_category)}</strong> full → Government slot <strong>${rollInfo.recruit_slot}</strong></span><br>`;
+    }
+    
     if (rollInfo.government_full_no_advance) {
         html += `<span class="effect-text">Government advancement is full. IBO does not advance in Government; use <strong>RECRUIT</strong> instead.</span><br>`;
     }
+    
     if (rollInfo.culture_token) {
         html += `<span class="roll-info-culture">+1 <img src="assets/culture-token.png" alt="🎭" class="roll-info-culture-icon" onerror="this.outerHTML='🎭 '" /> (${cultureTotal} current total)</span><br>`;
     }
     
     if (rollInfo.building) {
-        html += `🏗️ Building: ${rollInfo.building}<br>`;
+        html += `🏗️ Building: ${escapeHtml(rollInfo.building)}<br>`;
     }
     
     if (rollInfo.range_message) {
-        html += `${rollInfo.range_message}<br>`;
+        html += `${escapeHtml(rollInfo.range_message)}<br>`;
     }
     
     if (rollInfo.wonder_check) {
         html += `✓ Wonder Check!<br>`;
-        if (rollInfo.message && rollInfo.message.includes('✓ Wonder Check!')) {
-            const effectText = rollInfo.message.replace('✓ Wonder Check! ', '').trim();
-            if (effectText) {
-                html += `<small class="effect-text">${effectText}</small>`;
-            }
+        const effectText = (rollInfo.message || '').replace(/^✓ Wonder Check!\s*/i, '').trim();
+        if (effectText) {
+            html += `<small class="effect-text">${escapeHtml(effectText)}</small>`;
         }
     }
     
     if (rollInfo.action_card_effect) {
         const shortMsg = ACTION_CARD_SHORT[category];
         if (shortMsg) {
-            html += `<br><small class="effect-text">📋 ${shortMsg}</small>`;
+            html += `<br><small class="effect-text">📋 ${escapeHtml(shortMsg)}</small>`;
         }
     }
     
     if (rollInfo.draw_event_card) {
         html += `<br><strong class="draw-event-text">📇 Draw Event card</strong>`;
+    }
+    
+    if (rollInfo.message && !rollInfo.wonder_check) {
+        html += `<p class="roll-info-detail">${escapeHtml(rollInfo.message)}</p>`;
     }
     
     infoContent.innerHTML = html;
@@ -753,11 +786,11 @@ function updateAggressionRanges() {
     if (aggrDisplay) {
         aggrDisplay.innerHTML = `
             <div class="aggression-item">
-                <span class="aggression-label">🗡️🥾 Land AgRng:</span>
+                <span class="aggression-label">🗡️🥾 Land Ag_Rng:</span>
                 <span class="aggression-value">${ranges.land}</span>
             </div>
             <div class="aggression-item">
-                <span class="aggression-label">⛵🗡️ Naval AgRng:</span>
+                <span class="aggression-label">⛵🗡️ Naval Ag_Rng:</span>
                 <span class="aggression-value">${ranges.naval}</span>
             </div>
         `;
