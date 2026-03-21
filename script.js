@@ -3,6 +3,24 @@
 let gameState = null;
 let lastLogLength = 0;
 
+let cultureManualAdjustTimer = null;
+let cultureManualAdjustDelta = 0;
+
+function flushCultureManualLog() {
+    if (cultureManualAdjustDelta === 0) return;
+    const d = cultureManualAdjustDelta;
+    cultureManualAdjustDelta = 0;
+    cultureManualAdjustTimer = null;
+    const sign = d > 0 ? '+' : '';
+    addLog(`🎭 Manual culture tokens: ${sign}${d} (total: ${gameState.culture_tokens})`);
+}
+
+function queueCultureManualLog(delta) {
+    cultureManualAdjustDelta += delta;
+    if (cultureManualAdjustTimer) clearTimeout(cultureManualAdjustTimer);
+    cultureManualAdjustTimer = setTimeout(flushCultureManualLog, 1500);
+}
+
 // Category culture token bonus positions: category -> list of advancement numbers
 const cultureBonusMap = {
     'Agriculture': [],
@@ -309,7 +327,9 @@ function rollAdvancement() {
             const govAvailableSlots = [1, 2, 3, 4].filter(slot => !govCurrentSlots.includes(slot));
             
             if (govAvailableSlots.length > 0) {
-                const govNewSlot = govAvailableSlots[Math.floor(Math.random() * govAvailableSlots.length)];
+                const govNewSlot = govAvailableSlots.includes(1)
+                    ? 1
+                    : govAvailableSlots[Math.floor(Math.random() * govAvailableSlots.length)];
                 gameState['advancement_slots']['Government'].push(govNewSlot);
                 gameState['advancement_slots']['Government'].sort((a, b) => a - b);
                 
@@ -321,8 +341,14 @@ function rollAdvancement() {
                 addLog(`🎖️ <strong>${category}</strong> is full! → RECRUIT action: <strong>Government</strong> Slot ${govNewSlot} (${govProgress}/4)`, rollIndex);
             } else {
                 rollInfo['category'] = 'Government';
-                rollInfo['message'] = '🎖️ RECRUIT action attempted but Government is also full!';
-                addLog('🎖️ ' + category + ' is full! Government RECRUIT also full - no advancement', rollIndex);
+                if (category === 'Government') {
+                    rollInfo['government_full_no_advance'] = true;
+                    rollInfo['message'] = 'Government advancement is full. IBO does not advance in Government; use RECRUIT instead.';
+                    addLog('🎖️ <strong>Government</strong> advancement is full — IBO does not advance; use <strong>RECRUIT</strong> instead.', rollIndex);
+                } else {
+                    rollInfo['message'] = '🎖️ RECRUIT action attempted but Government is also full!';
+                    addLog('🎖️ ' + category + ' is full! Government RECRUIT also full - no advancement', rollIndex);
+                }
             }
             
             rollInfo['draw_event_card'] = drawEventCard;
@@ -367,10 +393,10 @@ function rollAdvancement() {
         const ranges = calculateAggressionRanges();
         if (category === 'Maritime') {
             rollInfo['range_message'] = `Naval range increased (+1) to total of ${ranges.naval}`;
-            addLog(`⛵ ${rollInfo['range_message']}`, rollIndex);
+            addLog(`⛵🗡️ ${rollInfo['range_message']}`, rollIndex);
         } else if (category === 'Warfare') {
             rollInfo['range_message'] = `Land range increased (+1) to total of ${ranges.land}`;
-            addLog(`🗡️👣 ${rollInfo['range_message']}`, rollIndex);
+            addLog(`🗡️🥾 ${rollInfo['range_message']}`, rollIndex);
         }
         
         // Check if building should be placed (when first slot is filled)
@@ -396,28 +422,41 @@ function rollAdvancement() {
             addLog(`🎭 +1 Culture token (${gameState.culture_tokens} total)`, rollIndex);
         }
         
-        // 3rd/4th advancement = total count in category (not slot number). E.g. slots 1+4 filled = 2 total, no trigger; when 3rd total filled, trigger.
-        const wonderCheckCategories = ['Agriculture', 'Construction', 'Government'];
-        const actionCardCategories = ['Education', 'Spirituality', 'Economy', 'Science', 'Government'];
+        // Government: Wonder Check on every advance; full rule + action card at 3rd/4th total
+        if (category === 'Government') {
+            rollInfo['wonder_check'] = true;
+            const govEffect = CATEGORY_EFFECTS['Government'] || '';
+            if (totalFilled >= 3) {
+                rollInfo['message'] = `✓ Wonder Check! ${govEffect}`;
+                rollInfo['action_card_effect'] = true;
+                rollInfo['action_card_message'] = govEffect;
+                addLog(`✓ Wonder Check! <strong>${govEffect}</strong>`, rollIndex);
+                addLog(`📋 <strong>${govEffect}</strong>`, rollIndex);
+            } else {
+                rollInfo['message'] = '✓ Wonder Check!';
+                addLog(`✓ Wonder Check!`, rollIndex);
+            }
+        }
+
+        // 3rd/4th advancement = total count in category — Agriculture & Construction Wonder; other categories action cards
         const isThirdOrFourthTotal = totalFilled === 3 || totalFilled === 4;
         
-        if (wonderCheckCategories.includes(category) && isThirdOrFourthTotal) {
+        if ((category === 'Agriculture' || category === 'Construction') && isThirdOrFourthTotal) {
             rollInfo['wonder_check'] = true;
             rollInfo['wonder_total'] = totalFilled;
             const effect = CATEGORY_EFFECTS[category] || '';
-            rollInfo['message'] = totalFilled === 3 && (category === 'Agriculture' || category === 'Construction')
+            rollInfo['message'] = totalFilled === 3
                 ? `✓ Wonder Check! With the 3rd advancement, Reveal a Wonder.`
-                : category === 'Government'
-                    ? `✓ Wonder Check! ${effect}`
-                    : `✓ Wonder Check!`;
+                : `✓ Wonder Check!`;
             addLog(`✓ Wonder Check! <strong>${effect}</strong>`, rollIndex);
         }
         
+        const actionCardCategories = ['Education', 'Spirituality', 'Economy', 'Science'];
         if (actionCardCategories.includes(category) && isThirdOrFourthTotal) {
             const effect = CATEGORY_EFFECTS[category] || '';
             rollInfo['action_card_effect'] = true;
             rollInfo['action_card_message'] = effect;
-            if (category !== 'Government') addLog(`📋 <strong>${effect}</strong>`, rollIndex);
+            addLog(`📋 <strong>${effect}</strong>`, rollIndex);
         }
     }
     
@@ -602,6 +641,9 @@ function displayRollInfo(rollInfo) {
     const cultureTotal = gameState.culture_tokens || 0;
     
     let html = `<strong class="roll-info-category">${category} (${totalSlots}/4)</strong><br>`;
+    if (rollInfo.government_full_no_advance) {
+        html += `<span class="effect-text">Government advancement is full. IBO does not advance in Government; use <strong>RECRUIT</strong> instead.</span><br>`;
+    }
     if (rollInfo.culture_token) {
         html += `<span class="roll-info-culture">+1 <img src="assets/culture-token.png" alt="🎭" class="roll-info-culture-icon" onerror="this.outerHTML='🎭 '" /> (${cultureTotal} current total)</span><br>`;
     }
@@ -711,11 +753,11 @@ function updateAggressionRanges() {
     if (aggrDisplay) {
         aggrDisplay.innerHTML = `
             <div class="aggression-item">
-                <span class="aggression-label">🗡️👣 Land Range:</span>
+                <span class="aggression-label">🗡️🥾 Land AgRng:</span>
                 <span class="aggression-value">${ranges.land}</span>
             </div>
             <div class="aggression-item">
-                <span class="aggression-label">⛵ Naval Range:</span>
+                <span class="aggression-label">⛵🗡️ Naval AgRng:</span>
                 <span class="aggression-value">${ranges.naval}</span>
             </div>
         `;
@@ -741,7 +783,7 @@ function updateCultureTokenDisplay() {
 // Increment culture tokens
 function incrementCultureTokens() {
     gameState.culture_tokens = (gameState.culture_tokens || 0) + 1;
-    addLog(`🎭 +1 Culture Token (Total: ${gameState.culture_tokens})`);
+    queueCultureManualLog(1);
     saveState();
     updateCultureTokenDisplay();
 }
@@ -750,7 +792,7 @@ function incrementCultureTokens() {
 function decrementCultureTokens() {
     if ((gameState.culture_tokens || 0) > 0) {
         gameState.culture_tokens -= 1;
-        addLog(`🎭 -1 Culture Token (Total: ${gameState.culture_tokens})`);
+        queueCultureManualLog(-1);
         saveState();
         updateCultureTokenDisplay();
     }

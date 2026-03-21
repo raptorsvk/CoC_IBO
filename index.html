@@ -39,15 +39,21 @@
                         <div class="tracker-header-left">
                             <h2>Advancement Tracker</h2>
                         </div>
+                        <div class="aggression-help-wrap">
                         <div id="aggression-display" class="aggression-display">
                             <div class="aggression-item">
-                                <span class="aggression-label">🗡️👣 Land Range:</span>
+                                <span class="aggression-label">🗡️🥾 Land AgRng:</span>
                                 <span class="aggression-value">1</span>
                             </div>
                             <div class="aggression-item">
-                                <span class="aggression-label">⛵ Naval Range:</span>
+                                <span class="aggression-label">⛵🗡️ Naval AgRng:</span>
                                 <span class="aggression-value">1</span>
                             </div>
+                        </div>
+                        <div class="aggression-range-help">
+                            <strong>Land Aggression Range</strong> is 1 + the number of Warfare Advancements learned by IBO. (Used for moving army/fleet.)<br><br>
+                            <strong>Naval Aggression Range</strong> is 1 + the number of Maritime Advancements learned by IBO. (Used for moving ship/fleet.)
+                        </div>
                         </div>
                         <div class="tracker-header-right">
                         <div class="event-tracker-wrap" id="eventTrackerWrap">
@@ -68,11 +74,16 @@
                                 <strong>Exhausted Land:</strong> Place the Exhausted Token on the scale with the first non-settlement city-piece. When IBO goes to CONSTRUCT this city-piece, return it to supply and place the exhaust token adjacent to the city with his settler instead. If no valid city-piece is on scale, discard exhaust token.
                             </div>
                         </div>
+                            <div class="culture-token-wrap">
                             <div class="culture-token-badge">
                                 <img src="assets/culture-token.png" alt="Culture" class="token-icon" onerror="this.style.display='none';this.nextElementSibling.style.display='inline';" /><span class="token-emoji-fallback" style="display:none;font-size:1.1em">🎭</span>
                                 <span id="cultureTokenBadge" class="token-badge-count">0</span>
                                 <button id="tokenDecBtn" class="btn-inline-token">−</button>
                                 <button id="tokenIncBtn" class="btn-inline-token">+</button>
+                            </div>
+                            <div class="culture-token-help">
+                                Advancement slots with a <strong>cyan</strong> outline grant <strong>+1 Culture token</strong> when filled (see tracker). Traditions also grants tokens at 2nd and 4th total advancements.
+                            </div>
                             </div>
                         </div>
                     </div>
