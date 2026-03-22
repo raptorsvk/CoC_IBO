@@ -35,6 +35,28 @@ body {
     overflow-x: hidden;
 }
 
+.footer {
+    background: linear-gradient(135deg, #0d2137 0%, #1e3a5f 50%, #0a1628 100%);
+    padding: 1rem;
+    text-align: center;
+    border-top: 2px solid #2a4a6f;
+    margin-top: 2rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.footer-link {
+    color: var(--accent-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: var(--accent-tertiary);
+    text-decoration: underline;
+}
+
 /* Header - Navy blue gradient */
 .header {
     position: relative;
