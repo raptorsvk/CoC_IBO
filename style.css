@@ -457,6 +457,19 @@ body {
     font-size: 0.75rem;
 }
 
+#clearLogBtn {
+    background: linear-gradient(180deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
+    color: var(--bg-darker);
+    border: 2px solid var(--accent-primary);
+    font-weight: 600;
+}
+
+#clearLogBtn:hover {
+    background: linear-gradient(180deg, var(--accent-tertiary) 0%, var(--accent-secondary) 100%);
+    color: var(--bg-darker);
+    box-shadow: 0 4px 12px rgba(196, 168, 88, 0.3);
+}
+
 .control-row {
     display: flex;
     gap: 0.8rem;
