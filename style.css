@@ -39,7 +39,7 @@ body {
 .header {
     position: relative;
     background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 50%, #0d2137 100%);
-    padding: 1.5rem;
+    padding: 1.4rem;
     padding-right: 13rem;
     text-align: center;
     border-bottom: 3px solid #2a4a6f;
@@ -50,10 +50,40 @@ body {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    z-index: 2;
-    white-space: nowrap;
-    text-transform: none;
-    letter-spacing: 0.02em;
+    z-index: 10;
+}
+
+.header-left {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    z-index: 10;
+}
+
+.knight-logo {
+    width: auto;
+    height: 100%;
+    max-height: 98px;
+    object-fit: contain;
+}
+
+.version-info {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 1rem;
+    z-index: 10;
+    text-align: right;
+}
+
+.version-badge {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
 }
 
 .header h1 {
@@ -62,6 +92,15 @@ body {
     margin-bottom: 0.3rem;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     color: #e8f0f8;
+}
+
+.header h1 .subtitle-small {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: rgba(232, 240, 248, 0.7);
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+    display: block;
+    margin-top: 0.2rem;
 }
 
 .header .subtitle {
