@@ -346,18 +346,18 @@ function rollAdvancement() {
                 rollInfo['wonder_check'] = true;
                 if (govProgress >= 3) {
                     rollInfo['message'] = `✓ Wonder Check! ${govEffect}`;
-                    rollInfo['action_card_effect'] = true;
-                    rollInfo['action_card_message'] = govEffect;
+                    addLog(`✓ Wonder Check! <strong>${govEffect}</strong>`, rollIndex);
                 } else {
                     rollInfo['message'] = '✓ Wonder Check!';
+                    addLog(`✓ Wonder Check!`, rollIndex);
                 }
-                addLog(`🎖️ <strong>${category}</strong> is full! → RECRUIT action: <strong>Government</strong> Slot ${govNewSlot} (${govProgress}/4)`, rollIndex);
+                addLog(`🎯 Rolled <strong>${category}</strong> is full (4/4) — <strong>Government</strong> advancement, slot ${govNewSlot} (${govProgress}/4)`, rollIndex);
             } else {
                 rollInfo['category'] = 'Government';
                 if (category === 'Government') {
                     rollInfo['government_full_no_advance'] = true;
-                    rollInfo['message'] = 'Government advancement is full. IBO does not advance in Government; use RECRUIT instead.';
-                    addLog('🎖️ <strong>Government</strong> advancement is full — IBO does not advance; use <strong>RECRUIT</strong> instead.', rollIndex);
+                    rollInfo['message'] = 'Government advancement is full (4/4). IBO does not advance in Government; this ADVANCE resolves as RECRUIT instead.';
+                    addLog('🎖️ <strong>Government</strong> full (4/4) — no Government advancement; this result is <strong>RECRUIT</strong> instead.', rollIndex);
                 } else {
                     rollInfo['message'] = '🎖️ RECRUIT action attempted but Government is also full!';
                     addLog('🎖️ ' + category + ' is full! Government RECRUIT also full - no advancement', rollIndex);
@@ -472,6 +472,7 @@ function rollAdvancement() {
             const effect = CATEGORY_EFFECTS[category] || '';
             rollInfo['action_card_effect'] = true;
             rollInfo['action_card_message'] = effect;
+            rollInfo['message'] = '';
             addLog(`📋 <strong>${effect}</strong>`, rollIndex);
         }
     }
@@ -668,11 +669,11 @@ function displayRollInfo(rollInfo) {
     let html = `<strong class="roll-info-category">${escapeHtml(category)} (${totalSlots}/4)</strong><br>`;
     
     if (rollInfo.recruit_redirect && rollInfo.recruit_from_category) {
-        html += `<span class="effect-text">🎖️ RECRUIT: <strong>${escapeHtml(rollInfo.recruit_from_category)}</strong> full → Government slot <strong>${rollInfo.recruit_slot}</strong></span><br>`;
+        html += `<span class="effect-text">Rolled <strong>${escapeHtml(rollInfo.recruit_from_category)}</strong> is full (4/4) — place <strong>Government</strong> advancement, slot <strong>${escapeHtml(String(rollInfo.recruit_slot))}</strong>.</span><br>`;
     }
     
     if (rollInfo.government_full_no_advance) {
-        html += `<span class="effect-text">Government advancement is full. IBO does not advance in Government; use <strong>RECRUIT</strong> instead.</span><br>`;
+        html += `<span class="effect-text">Government is full (4/4). IBO does not advance in Government; this ADVANCE resolves as <strong>RECRUIT</strong> instead.</span><br>`;
     }
     
     if (rollInfo.culture_token) {
@@ -706,8 +707,9 @@ function displayRollInfo(rollInfo) {
         html += `<br><strong class="draw-event-text">📇 Draw Event card</strong>`;
     }
     
-    if (rollInfo.message && !rollInfo.wonder_check) {
-        html += `<p class="roll-info-detail">${escapeHtml(rollInfo.message)}</p>`;
+    const detailMsg = (rollInfo.message || '').trim();
+    if (detailMsg && !rollInfo.wonder_check && !rollInfo.government_full_no_advance && !rollInfo.action_card_effect) {
+        html += `<p class="roll-info-detail">${escapeHtml(detailMsg)}</p>`;
     }
     
     infoContent.innerHTML = html;
@@ -790,7 +792,7 @@ function updateAggressionRanges() {
                 <span class="aggression-value">${ranges.land}</span>
             </div>
             <div class="aggression-item">
-                <span class="aggression-label">⛵🗡️ Naval Ag_Rng:</span>
+                <span class="aggression-label">⛵🗡️ Naval Agr_Rng:</span>
                 <span class="aggression-value">${ranges.naval}</span>
             </div>
         `;

@@ -22,7 +22,10 @@
     --danger: #c44;
     --border-color: #2d3644;
     --culture-cyan: #00d4ff;
-    --highlight-orange: #f2cd80;
+    --advancement-edge: #fff886;
+    --advancement-square-fill: #ff9500;
+    --event-square-orange: #ff9500;
+    --event-gold: #ffe086;
 }
 
 body {
@@ -121,13 +124,13 @@ body {
     display: inline-block;
     width: 16px;
     height: 16px;
-    border: 2px solid var(--highlight-orange);
+    border: 2px solid var(--event-square-orange);
     border-radius: 2px;
     transition: background 0.2s ease;
 }
 
 .event-square.filled {
-    background-color: var(--highlight-orange);
+    background-color: var(--event-square-orange);
 }
 
 .event-square.empty {
@@ -145,7 +148,7 @@ body {
     max-height: 70vh;
     overflow-y: auto;
     background: var(--bg-dark);
-    border: 2px solid var(--paper-dark);
+    border: 2px solid var(--event-gold);
     border-radius: 8px;
     padding: 1rem;
     font-size: 0.8rem;
@@ -664,11 +667,11 @@ body {
     box-shadow: 0 4px 12px rgba(232, 220, 184, 0.15);
 }
 
-/* Last Rolled Category Indicator */
+/* Last Rolled Category Indicator — orange edges */
 .advancement-item.last-rolled {
-    border: 4px solid var(--highlight-orange) !important;
-    box-shadow: 0 0 25px rgba(242, 205, 128, 0.65), inset 0 0 10px rgba(242, 205, 128, 0.25) !important;
-    outline: 3px solid var(--highlight-orange);
+    border: 4px solid var(--advancement-edge) !important;
+    box-shadow: 0 0 25px rgba(255, 149, 0, 0.75), inset 0 0 10px rgba(255, 149, 0, 0.2) !important;
+    outline: 3px solid var(--advancement-edge);
     outline-offset: 2px;
 }
 
@@ -730,35 +733,35 @@ body {
     background-color: transparent;
 }
 
-/* Newly added advancement square - orange inside fill */
+/* Newly added advancement square — #fff886 fill */
 .advancement-square.newly-added {
-    background-color: #f2cd80 !important;
+    background-color: var(--advancement-square-fill) !important;
     border-color: var(--paper-dark) !important;
     box-shadow: none !important;
 }
 
 .advancement-square.newly-added.filled {
-    background-color: #f2cd80 !important;
+    background-color: var(--advancement-square-fill) !important;
 }
 
 .advancement-square.newly-added.empty {
-    background-color: #f2cd80 !important;
+    background-color: var(--advancement-square-fill) !important;
 }
 
-/* Newly added with culture bonus - orange fill + cyan outline */
+/* Newly added with culture bonus — light fill + cyan outline */
 .advancement-square.newly-added.culture-bonus {
-    background-color: #f2cd80 !important;
+    background-color: var(--advancement-square-fill) !important;
     border-color: #00d4ff !important;
     border-width: 3px !important;
     box-shadow: 0 0 4px rgba(0, 212, 255, 0.6) !important;
 }
 
 .advancement-square.newly-added.culture-bonus.filled {
-    background-color: #f2cd80 !important;
+    background-color: var(--advancement-square-fill) !important;
 }
 
 .advancement-square.newly-added.culture-bonus.empty {
-    background-color: #f2cd80 !important;
+    background-color: var(--advancement-square-fill) !important;
 }
 
 /* Building label - displayed below squares */
@@ -784,7 +787,7 @@ body {
 }
 
 .draw-event-text {
-    color: var(--highlight-orange) !important;
+    color: var(--event-square-orange) !important;
 }
 
 .roll-info-detail {
@@ -805,7 +808,10 @@ body {
 }
 
 .roll-info-category {
-    color: var(--paper);
+    color: #fff886;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
 .effect-text {
