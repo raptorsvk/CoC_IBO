@@ -10,26 +10,23 @@
     <div class="container">
         <!-- Header (navy blue) -->
         <header class="header">
+            <button type="button" id="resetGameBtn" class="btn btn-danger btn-small header-reset-btn">Reset game</button>
             <h1>⚔️ Clash of Cultures - Solo Adventure Helper</h1>
             <p class="subtitle">work in progress</p>
         </header>
 
         <!-- Main Content -->
         <div class="main-grid">
-            <!-- Left Panel: Tracker (Large) -->
             <div class="left-panel">
-                <!-- Roll Controls -->
-                <section class="control-section compact">
-                    <div class="control-row">
-                        <button id="rollBtn" class="btn btn-primary">🎲 Roll</button>
-                        <button id="resetGameBtn" class="btn btn-danger btn-small">Reset</button>
-                    </div>
-                </section>
-
-                <!-- Roll Info Section -->
-                <section class="info-section">
-                    <div id="rollInfo">
-                        <p class="info-placeholder">Roll to see advancement details...</p>
+                <!-- Roll + roll result (fixed-height text area) -->
+                <section class="roll-action-section">
+                    <div class="roll-action-row">
+                        <button type="button" id="rollBtn" class="btn btn-primary roll-action-btn">🎲 Roll</button>
+                        <div class="roll-info-panel" aria-label="Roll result">
+                            <div id="rollInfo">
+                                <p class="info-placeholder">Roll to see advancement details...</p>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -159,7 +156,6 @@
                 </section>
             </div>
 
-            <!-- Right Panel: Log (SMALLER) -->
             <div class="right-panel">
                 <section class="log-section">
                     <div class="log-header">

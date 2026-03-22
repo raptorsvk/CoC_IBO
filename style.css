@@ -37,11 +37,23 @@ body {
 
 /* Header - Navy blue gradient */
 .header {
+    position: relative;
     background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 50%, #0d2137 100%);
     padding: 1.5rem;
+    padding-right: 13rem;
     text-align: center;
     border-bottom: 3px solid #2a4a6f;
     margin-bottom: 1rem;
+}
+
+.header-reset-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2;
+    white-space: nowrap;
+    text-transform: none;
+    letter-spacing: 0.02em;
 }
 
 .header h1 {
@@ -178,6 +190,20 @@ body {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 1.5rem;
+    align-items: start;
+}
+
+/* Left: roll + tracker — height is independent of log length */
+.left-panel,
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.left-panel {
+    overflow: visible;
 }
 
 @media (max-width: 1200px) {
@@ -186,22 +212,11 @@ body {
     }
 }
 
-/* Panels */
-.left-panel,
-.right-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.left-panel {
-    overflow: visible;
-}
-
 /* Sections */
 .control-section,
 .tracker-section,
-.info-section {
+.info-section,
+.roll-action-section {
     background-color: var(--bg-light);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -215,7 +230,8 @@ body {
 
 .control-section:hover,
 .tracker-section:hover,
-.info-section:hover {
+.info-section:hover,
+.roll-action-section:hover {
     border-color: var(--paper-dark);
     box-shadow: 0 4px 12px rgba(232, 220, 184, 0.08);
 }
@@ -223,7 +239,8 @@ body {
 .control-section h2,
 .control-section h3,
 .tracker-section h2,
-.info-section h2 {
+.info-section h2,
+.roll-action-section h2 {
     color: var(--paper);
     font-size: 1.1rem;
     margin-bottom: 0.8rem;
@@ -237,7 +254,7 @@ body {
     margin-bottom: 1rem;
 }
 
-/* Roll Info Section */
+/* Roll Info Section (legacy if used elsewhere) */
 .info-section {
     background: linear-gradient(135deg, rgba(30, 58, 95, 0.25), rgba(232, 220, 184, 0.08));
     border: 2px solid var(--paper-dark);
@@ -247,6 +264,65 @@ body {
     align-items: center;
     justify-content: center;
     border-radius: 8px;
+}
+
+/* Roll button + fixed-height result panel */
+.roll-action-section {
+    --roll-panel-height: 12.75rem;
+    background: linear-gradient(135deg, rgba(30, 58, 95, 0.2), rgba(232, 220, 184, 0.06));
+    border: 2px solid var(--paper-dark);
+    padding: 0.85rem 1rem;
+}
+
+.roll-action-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+}
+
+/* Roll above text — same width as text panel below */
+.roll-action-btn {
+    flex: 0 0 auto;
+    align-self: stretch;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Fixed height — taller to avoid scroll for typical roll messages */
+.roll-info-panel {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    height: var(--roll-panel-height);
+    min-height: var(--roll-panel-height);
+    max-height: var(--roll-panel-height);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #191f27;
+    padding: 0.65rem 0.85rem;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.roll-info-panel #rollInfo {
+    width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    text-align: center;
+    -webkit-overflow-scrolling: touch;
 }
 
 #rollInfo {
@@ -830,7 +906,7 @@ body {
     width: 100%;
 }
 
-/* Log Section (SMALLER) */
+/* Log Section — fixed height; long entries scroll inside (does not stretch tracker) */
 .log-section {
     background-color: var(--bg-light);
     border: 1px solid var(--border-color);
@@ -838,9 +914,11 @@ body {
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    height: 100%;
     min-height: 400px;
     max-height: 400px;
+    height: 400px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .log-header {
@@ -861,7 +939,8 @@ body {
 }
 
 .log-container {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -954,12 +1033,32 @@ body {
 }
 
 @media (max-width: 768px) {
+    .header {
+        padding-right: 1rem;
+        padding-top: 3.25rem;
+    }
+
+    .header-reset-btn {
+        top: 0.65rem;
+        right: 0.65rem;
+        font-size: 0.65rem;
+        padding: 0.45rem 0.55rem;
+        white-space: normal;
+        max-width: 42vw;
+        text-align: center;
+        line-height: 1.2;
+    }
+
     .header h1 {
         font-size: 1.5rem;
     }
 
     .header .subtitle {
         font-size: 0.8rem;
+    }
+
+    .roll-action-section {
+        --roll-panel-height: 11rem;
     }
 
     .main-grid {
